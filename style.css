@@ -905,3 +905,79 @@ button { font: inherit; }
   object-fit: contain;
   object-position: center;
 }
+
+/* =========================================================
+   Safari / iPad interaction fixes
+   ========================================================= */
+
+/*
+ * The game is a fixed-screen interaction.
+ * Disable browser touch gestures inside the game.
+ */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Replace or add your main game wrapper selectors here if needed. */
+#gameContainer,
+#gameArea,
+.game-container,
+.game-area,
+.game-shell {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* Buttons still receive normal single-touch interaction. */
+button,
+.image-button,
+#mixButton {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Keep the Mix button above bowl layers.
+ * This prevents transparent bowl/fruit elements from blocking the button.
+ */
+#mixButton {
+  position: relative;
+  z-index: 100;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#mixButton img {
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Enabled state */
+#mixButton:not(:disabled) {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Disabled state */
+#mixButton:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Optional visual confirmation when Safari has enabled the button */
+#mixButton.is-ready {
+  pointer-events: auto;
+  opacity: 1;
+}
