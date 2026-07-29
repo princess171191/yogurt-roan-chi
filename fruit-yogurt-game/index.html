@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7d77d">
+  <title>Fruit Yogurt Cooking Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app" aria-label="Fruit Yogurt Cooking Game">
+    <header class="top-bar">
+      <div class="brand" aria-label="Fruit Yogurt Cooking Game">
+        <span class="brand-flower">✿</span>
+        <span id="round-title">Fruit Yogurt Cooking Game</span>
+      </div>
+      <div id="global-progress" class="progress-pill" aria-live="polite">Ready to play!</div>
+      <button id="sound-toggle" class="round-icon-button" type="button" aria-label="Turn sound off" aria-pressed="false">
+        <span id="sound-icon" aria-hidden="true">🔊</span>
+      </button>
+    </header>
+
+    <section id="game-stage" class="game-stage" aria-live="polite">
+      <section id="start-scene" class="scene start-scene active" aria-label="Start screen">
+        <div id="floating-fruits" class="floating-fruits" aria-hidden="true"></div>
+        <div class="start-card">
+          <div class="tiny-label">A LITTLE ENGLISH ADVENTURE</div>
+          <h1>Fruit Yogurt<br>Cooking Game</h1>
+          <p>Pick, cut, and mix delicious fruits!</p>
+          <button id="start-button" class="image-button image-button-large" type="button" aria-label="Start game">
+            <img src="assets/images/play.png" alt="Start game" draggable="false">
+          </button>
+        </div>
+      </section>
+
+      <section id="garden-scene" class="scene garden-scene" aria-label="Round 1: Pick fruits from the garden">
+        <div class="instruction-card garden-instruction">
+          <strong id="garden-instruction">Listen and pick the correct fruit!</strong>
+          <button id="replay-audio" class="image-button image-button-small" type="button" aria-label="Hear the fruit name again">
+            <img src="assets/images/pickfruit.png" alt="Hear and pick the fruit" draggable="false">
+          </button>
+          <button id="garden-done-button" class="image-button image-button-small hidden" type="button" aria-label="Continue to the fruit cutting round">
+            <img src="assets/images/done.png" alt="Continue" draggable="false">
+          </button>
+        </div>
+
+        <div id="garden-plants" class="garden-plants"></div>
+
+        <div id="basket-zone" class="basket-zone drop-zone" aria-label="Fruit basket">
+          <div class="basket-container">
+            <img class="basket-back" src="assets/images/basket-back.png" alt="Basket back" draggable="false">
+            <div id="basket-items" class="basket-fruits" aria-hidden="true"></div>
+            <img class="basket-front" src="assets/images/basket-front.png" alt="Basket front" draggable="false" aria-hidden="true">
+          </div>
+        </div>
+      </section>
+
+      <section id="cutting-scene" class="scene kitchen-scene" aria-label="Round 2: Cut the fruits">
+        <div class="instruction-card cutting-instruction-card">
+          <strong id="cutting-instruction">Drag the fruit to the cutting board.</strong>
+          <button id="cutting-done-button" class="image-button image-button-small hidden" type="button" aria-label="Continue to the yogurt making round">
+            <img src="assets/images/done.png" alt="Continue" draggable="false">
+          </button>
+        </div>
+
+        <div id="whole-plate-zone" class="work-zone whole-plate-zone">
+          <img class="work-object plate-object" src="assets/images/plate.png" alt="Plate holding whole fruits" draggable="false">
+          <div id="whole-fruits-layer" class="plate-fruit-layer"></div>
+          <span class="zone-label">Whole fruits</span>
+        </div>
+
+        <div id="cutting-board-zone" class="work-zone cutting-board-zone drop-zone" aria-label="Cutting board">
+          <img class="work-object board-object" src="assets/images/cutting-board.png" alt="Wooden cutting board" draggable="false">
+          <div id="board-fruit-layer" class="board-fruit-layer"></div>
+          <div id="cut-sparkles" class="cut-sparkles" aria-hidden="true"></div>
+        </div>
+
+        <div id="cut-plate-zone" class="work-zone cut-plate-zone drop-zone" aria-label="Plate for cut fruits">
+          <img class="work-object plate-object" src="assets/images/plate.png" alt="Empty plate for cut fruit" draggable="false">
+          <div id="cut-fruits-layer" class="plate-fruit-layer completed-layer"></div>
+          <span class="zone-label">Cut fruits</span>
+        </div>
+
+        <div id="knife" class="knife draggable disabled" role="img" aria-label="Kitchen knife">
+          <img class="knife-image" src="assets/images/knife.png" alt="" draggable="false" data-fallback-label="Knife">
+        </div>
+      </section>
+
+      <section id="yogurt-scene" class="scene kitchen-scene yogurt-scene" aria-label="Round 3: Make fruit yogurt">
+        <div class="instruction-card">
+          <strong id="yogurt-instruction">First, add the yogurt to the bowl.</strong>
+        </div>
+
+        <div id="yogurt-container-zone" class="yogurt-container-zone">
+          <img id="yogurt-container" class="yogurt-container draggable" src="assets/images/yogurt-container.png" alt="Yogurt container" draggable="false" data-fallback-label="Yogurt">
+          <span class="zone-label">Yogurt</span>
+        </div>
+
+        <div id="mixing-bowl-zone" class="mixing-bowl-zone bowl-wrapper drop-zone" aria-label="Mixing bowl">
+          <img id="bowl-base" class="bowl-base" src="assets/images/bowl-empty.png" alt="Empty mixing bowl" draggable="false">
+          <div id="bowl-content-clip" class="bowl-content-clip" aria-hidden="true">
+            <div id="bowl-yogurt-surface" class="bowl-yogurt-surface hidden"></div>
+            <div id="bowl-inner" class="bowl-fruit-layer"></div>
+          </div>
+          <img id="mixing-spoon" class="mixing-spoon" src="assets/images/spoon.png" alt="Spoon mixing the yogurt" draggable="false">
+          <img id="bowl-front-rim" class="bowl-front-rim" src="assets/images/bowl-empty.png" alt="" draggable="false" aria-hidden="true">
+        </div>
+
+        <div id="yogurt-fruit-plate-zone" class="yogurt-fruit-plate-zone">
+          <img class="work-object plate-object" src="assets/images/plate.png" alt="Plate holding cut fruits" draggable="false">
+          <div id="yogurt-fruits-layer" class="yogurt-fruits-layer"></div>
+          <span class="zone-label">Fruit pieces</span>
+        </div>
+
+        <div id="yogurt-controls" class="yogurt-controls">
+          <button id="mix-button" class="image-button image-button-medium" type="button" aria-label="Mix the fruit yogurt" disabled>
+            <img src="assets/images/mix.png" alt="Mix" draggable="false">
+          </button>
+          <button id="clear-bowl-button" class="image-button image-button-medium hidden" type="button" aria-label="Clear the bowl">
+            <img src="assets/images/reset.png" alt="Clear bowl" draggable="false">
+          </button>
+        </div>
+
+        <div id="completion-controls" class="completion-controls hidden" aria-label="Completed yogurt controls">
+          <button id="reset-game-button" class="image-button image-button-medium" type="button" aria-label="Play again from the beginning">
+            <img src="assets/images/reset.png" alt="Play again" draggable="false">
+          </button>
+          <button id="free-play-button" class="image-button image-button-medium" type="button" aria-label="Open Free Play">
+            <img src="assets/images/play.png" alt="Free Play" draggable="false">
+          </button>
+          <button id="mix-again-button" class="image-button image-button-medium hidden" type="button" aria-label="Mix again">
+            <img src="assets/images/mix.png" alt="Mix again" draggable="false">
+          </button>
+          <button id="clear-final-button" class="image-button image-button-medium hidden" type="button" aria-label="Clear the bowl">
+            <img src="assets/images/reset.png" alt="Clear bowl" draggable="false">
+          </button>
+          <button id="play-full-game-button" class="image-button image-button-medium hidden" type="button" aria-label="Play the full game">
+            <img src="assets/images/play.png" alt="Play full game" draggable="false">
+          </button>
+        </div>
+      </section>
+
+      <div id="celebration-layer" class="celebration-layer" aria-hidden="true"></div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+      <aside id="debug-panel" class="debug-panel hidden" aria-label="Debug information">
+        <strong>Debug mode</strong>
+        <pre id="debug-state"></pre>
+        <button id="debug-next" type="button">Skip round</button>
+      </aside>
+    </section>
+
+    <p class="footer-note">Mouse and touch supported • Learn: Apple, Banana, Grapes, Mango, Kiwi, Strawberry, Blueberry</p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
