@@ -981,3 +981,225 @@ button,
   pointer-events: auto;
   opacity: 1;
 }
+/* =========================================================
+   MOBILE FULL-SCREEN + ORIENTATION FIX
+   ========================================================= */
+
+:root {
+  --game-width: 100vw;
+  --game-height: 56.25vw;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  /* Giữ khóa zoom nhưng không khóa xoay màn hình */
+  touch-action: none;
+  overscroll-behavior: none;
+
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+}
+
+/*
+ * Vùng hiển thị bao ngoài.
+ * Sử dụng kích thước do visualViewport cung cấp để tránh lỗi 100vh
+ * trên Safari, Chrome mobile và thanh địa chỉ điện thoại.
+ */
+#appViewport {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+
+  overflow: hidden;
+  background: #fff7dc;
+}
+
+/*
+ * Khung game 16:9 luôn nằm trọn trong màn hình.
+ * Không bị mất nút Start ở điện thoại dọc.
+ */
+.game-frame {
+  position: relative;
+  flex: 0 0 auto;
+
+  width: var(--game-width);
+  height: var(--game-height);
+
+  max-width: 100%;
+  max-height: 100%;
+
+  overflow: hidden;
+  transform-origin: center center;
+}
+
+/*
+ * Các scene trong game phải lấp đầy đúng khung game,
+ * không dựa vào kích thước browser window.
+ */
+.game-frame .scene,
+.game-frame .game-scene,
+.game-frame .screen,
+.game-frame .round-screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Start screen không được đẩy nút ra ngoài màn hình */
+#startScreen,
+.start-screen {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: clamp(8px, 2vmin, 24px);
+  padding: clamp(12px, 3vmin, 36px);
+
+  overflow: hidden;
+}
+
+/* Thu nhỏ tiêu đề phù hợp với màn hình điện thoại */
+#startScreen h1,
+.start-screen h1,
+.game-title {
+  max-width: 92%;
+  margin: 0;
+  font-size: clamp(22px, 6vmin, 64px);
+  line-height: 1.08;
+  text-align: center;
+}
+
+/* Phụ đề không chiếm quá nhiều chiều cao */
+#startScreen .subtitle,
+.start-screen .subtitle,
+.game-subtitle {
+  max-width: 90%;
+  margin: 0;
+  font-size: clamp(13px, 2.8vmin, 28px);
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Bảo đảm nút Start luôn nhìn thấy */
+#startButton {
+  position: relative;
+  z-index: 100;
+
+  flex: 0 0 auto;
+  margin: clamp(4px, 1.5vmin, 18px) 0 0;
+
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+#startButton img {
+  display: block;
+
+  width: clamp(100px, 23vmin, 230px);
+  max-width: 42vw;
+  max-height: 24vh;
+  height: auto;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * Không hiển thị màn hình bắt buộc xoay ngang.
+ * Game sẽ tự co giãn ở cả hai hướng.
+ */
+#rotateDeviceMessage,
+.rotate-device-message,
+.orientation-warning,
+.landscape-warning {
+  display: none !important;
+}
+
+/* Điện thoại màn hình dọc */
+@media (orientation: portrait) {
+  #appViewport {
+    align-items: center;
+  }
+
+  #startScreen,
+  .start-screen {
+    justify-content: center;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  #startButton img {
+    width: clamp(105px, 28vw, 180px);
+    max-height: 20vh;
+  }
+}
+
+/* Điện thoại xoay ngang, chiều cao thấp */
+@media (orientation: landscape) and (max-height: 500px) {
+  #startScreen,
+  .start-screen {
+    gap: 4px;
+    padding: 6px 18px;
+  }
+
+  #startScreen h1,
+  .start-screen h1,
+  .game-title {
+    font-size: clamp(20px, 7vh, 42px);
+  }
+
+  #startScreen .subtitle,
+  .start-screen .subtitle,
+  .game-subtitle {
+    font-size: clamp(12px, 3.5vh, 20px);
+  }
+
+  #startButton {
+    margin-top: 2px;
+  }
+
+  #startButton img {
+    width: auto;
+    height: clamp(72px, 24vh, 125px);
+    max-width: 30vw;
+  }
+}
