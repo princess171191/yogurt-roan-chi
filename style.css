@@ -1478,3 +1478,42 @@ body {
     z-index: 100 !important;
   }
 }
+
+/* Fix màn hình Start bị cắt trên smartphone dọc */
+@media screen and (max-width: 720px) and (orientation: portrait) {
+  .start-card {
+    width: 78%;
+    max-height: calc(100% - 16px);
+    padding: 10px 18px;
+    border-width: 3px;
+    border-radius: 24px;
+  }
+
+  .tiny-label {
+    padding: 4px 10px;
+    font-size: 8px;
+  }
+
+  .start-card h1 {
+    margin: 6px 0 4px;
+    font-size: clamp(28px, 8vw, 48px);
+    line-height: 0.92;
+  }
+
+  .start-card p {
+    margin: 6px 0 8px;
+    font-size: clamp(12px, 3.5vw, 18px);
+    line-height: 1.15;
+  }
+
+  #start-button.image-button-large {
+    width: clamp(100px, 27vw, 150px);
+    min-height: 0;
+  }
+
+  .start-card::after {
+    right: 12px;
+    top: 8px;
+    font-size: 24px;
+  }
+}
