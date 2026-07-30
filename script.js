@@ -1419,3 +1419,172 @@ function initializeIPadZoomLock() {
 }
 
 initializeIPadZoomLock();
+
+/* =========================================================
+   MOBILE VIEWPORT + ORIENTATION FIX
+   ========================================================= */
+
+(function initializeResponsiveGameViewport() {
+  const GAME_ASPECT_RATIO = 16 / 9;
+
+  let viewportUpdateFrame = null;
+  let orientationTimer = null;
+
+  /**
+   * Lấy kích thước thực tế đang nhìn thấy.
+   * visualViewport chính xác hơn innerHeight trên Safari mobile.
+   */
+  function getVisibleViewportSize() {
+    const visualViewport = window.visualViewport;
+
+    const width = visualViewport
+      ? visualViewport.width
+      : window.innerWidth;
+
+    const height = visualViewport
+      ? visualViewport.height
+      : window.innerHeight;
+
+    return {
+      width: Math.max(1, width),
+      height: Math.max(1, height)
+    };
+  }
+
+  /**
+   * Tính khung game 16:9 lớn nhất nhưng luôn nằm hoàn toàn
+   * bên trong màn hình ở cả portrait và landscape.
+   */
+  function calculateGameFrame(viewportWidth, viewportHeight) {
+    let gameWidth = viewportWidth;
+    let gameHeight = gameWidth / GAME_ASPECT_RATIO;
+
+    if (gameHeight > viewportHeight) {
+      gameHeight = viewportHeight;
+      gameWidth = gameHeight * GAME_ASPECT_RATIO;
+    }
+
+    return {
+      width: Math.floor(gameWidth),
+      height: Math.floor(gameHeight)
+    };
+  }
+
+  function applyResponsiveGameSize() {
+    viewportUpdateFrame = null;
+
+    const viewport = getVisibleViewportSize();
+    const frame = calculateGameFrame(
+      viewport.width,
+      viewport.height
+    );
+
+    document.documentElement.style.setProperty(
+      "--game-width",
+      `${frame.width}px`
+    );
+
+    document.documentElement.style.setProperty(
+      "--game-height",
+      `${frame.height}px`
+    );
+
+    /*
+     * Cho phép các phần khác của game cập nhật drop zone
+     * sau khi xoay màn hình.
+     */
+    window.dispatchEvent(
+      new CustomEvent("gameviewportchange", {
+        detail: {
+          viewportWidth: viewport.width,
+          viewportHeight: viewport.height,
+          gameWidth: frame.width,
+          gameHeight: frame.height,
+          orientation:
+            viewport.width >= viewport.height
+              ? "landscape"
+              : "portrait"
+        }
+      })
+    );
+  }
+
+  function requestViewportUpdate() {
+    if (viewportUpdateFrame !== null) {
+      cancelAnimationFrame(viewportUpdateFrame);
+    }
+
+    viewportUpdateFrame = requestAnimationFrame(
+      applyResponsiveGameSize
+    );
+  }
+
+  function handleOrientationChange() {
+    clearTimeout(orientationTimer);
+
+    /*
+     * Safari cần một khoảng chờ ngắn để cập nhật
+     * kích thước visualViewport sau khi xoay máy.
+     */
+    requestViewportUpdate();
+
+    orientationTimer = setTimeout(() => {
+      requestViewportUpdate();
+    }, 250);
+
+    setTimeout(() => {
+      requestViewportUpdate();
+    }, 600);
+  }
+
+  window.addEventListener("resize", requestViewportUpdate, {
+    passive: true
+  });
+
+  window.addEventListener(
+    "orientationchange",
+    handleOrientationChange,
+    {
+      passive: true
+    }
+  );
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener(
+      "resize",
+      requestViewportUpdate,
+      {
+        passive: true
+      }
+    );
+
+    window.visualViewport.addEventListener(
+      "scroll",
+      requestViewportUpdate,
+      {
+        passive: true
+      }
+    );
+  }
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (!document.hidden) {
+        handleOrientationChange();
+      }
+    }
+  );
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      requestViewportUpdate,
+      {
+        once: true
+      }
+    );
+  } else {
+    requestViewportUpdate();
+  }
+})();
