@@ -1202,3 +1202,240 @@ body {
     max-width: 30vw;
   }
 }
+/* =========================================================
+   SMARTPHONE FULL GAME DISPLAY FIX
+   ========================================================= */
+
+:root {
+  --mobile-viewport-width: 100vw;
+  --mobile-viewport-height: 100dvh;
+  --responsive-game-width: 100vw;
+  --responsive-game-height: 56.25vw;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  overscroll-behavior: none;
+
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  height: var(--mobile-viewport-height);
+
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  overscroll-behavior: none;
+
+  background: #fff7dc;
+}
+
+/*
+ * Outer viewport.
+ * Add #appViewport if it exists in the current HTML.
+ */
+#appViewport {
+  position: fixed;
+  inset: 0;
+
+  width: var(--mobile-viewport-width);
+  height: var(--mobile-viewport-height);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    max(4px, env(safe-area-inset-top))
+    max(4px, env(safe-area-inset-right))
+    max(4px, env(safe-area-inset-bottom))
+    max(4px, env(safe-area-inset-left));
+
+  overflow: hidden;
+}
+
+/*
+ * Main game frame.
+ * These selectors cover common existing game-container names.
+ */
+#gameContainer,
+#gameArea,
+.game-frame,
+.game-container,
+.game-area {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  width: var(--responsive-game-width);
+  height: var(--responsive-game-height);
+
+  max-width: calc(
+    var(--mobile-viewport-width) -
+    env(safe-area-inset-left) -
+    env(safe-area-inset-right) -
+    8px
+  );
+
+  max-height: calc(
+    var(--mobile-viewport-height) -
+    env(safe-area-inset-top) -
+    env(safe-area-inset-bottom) -
+    8px
+  );
+
+  overflow: hidden;
+  transform-origin: center center;
+}
+
+/* Every scene must stay inside the calculated game frame. */
+#gameContainer > .scene,
+#gameContainer > .screen,
+#gameContainer > .game-scene,
+#gameArea > .scene,
+.game-frame > .scene,
+.game-container > .scene {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+/* Start screen always occupies the complete game frame. */
+#startScreen,
+.start-screen,
+.title-screen {
+  position: absolute !important;
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+
+  overflow: hidden !important;
+}
+
+/*
+ * Keep the Start button inside the bottom safe area.
+ * Supports common button IDs/classes.
+ */
+#startButton,
+#startGameButton,
+.start-button {
+  position: absolute !important;
+
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+
+  bottom: max(
+    3.5%,
+    calc(env(safe-area-inset-bottom) + 6px)
+  ) !important;
+
+  z-index: 200 !important;
+
+  width: auto;
+  max-width: 42%;
+
+  margin: 0 !important;
+
+  transform: translateX(-50%) !important;
+
+  pointer-events: auto !important;
+  touch-action: manipulation;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Keep the full Start image visible. */
+#startButton img,
+#startGameButton img,
+.start-button img {
+  display: block;
+
+  width: clamp(100px, 22vmin, 220px);
+  max-width: 100%;
+  max-height: 21vh;
+  height: auto;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Hide any old forced-rotation screen. */
+#rotateDeviceMessage,
+.rotate-device-message,
+.orientation-warning,
+.landscape-warning {
+  display: none !important;
+}
+
+/* Portrait smartphone */
+@media screen and (orientation: portrait) and (max-width: 768px) {
+  #startButton,
+  #startGameButton,
+  .start-button {
+    bottom: max(
+      5%,
+      calc(env(safe-area-inset-bottom) + 8px)
+    ) !important;
+
+    max-width: 38%;
+  }
+
+  #startButton img,
+  #startGameButton img,
+  .start-button img {
+    width: clamp(90px, 27vw, 160px);
+    max-height: 18vh;
+  }
+}
+
+/* Short landscape smartphone */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  #startButton,
+  #startGameButton,
+  .start-button {
+    bottom: max(
+      2.5%,
+      calc(env(safe-area-inset-bottom) + 3px)
+    ) !important;
+
+    max-width: 25%;
+  }
+
+  #startButton img,
+  #startGameButton img,
+  .start-button img {
+    width: auto;
+    height: clamp(68px, 21vh, 112px);
+    max-width: 100%;
+    max-height: 21vh;
+  }
+}
