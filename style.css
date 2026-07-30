@@ -1203,7 +1203,6 @@ body {
 
 :root {
   --mobile-viewport-width: 100vw;
-  --mobile-viewport-height: 100dvh;
   --responsive-game-width: 100vw;
   --responsive-game-height: 56.25vw;
 }
