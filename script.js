@@ -975,11 +975,98 @@ function updateYogurtProgress() {
   updateHeader(gameState.mode === "free" ? "Free Play • Fruit Yogurt" : "Round 3 • Make Yogurt", `Ingredients added: ${count} / 8`);
 }
 
+/**
+ * Return all fruit IDs currently added to the yogurt bowl.
+ * Supports:
+ * - Array of IDs
+ * - Array of fruit objects
+ * - Set of IDs
+ */
+function getAddedYogurtFruitIds() {
+  const addedFruits = gameState.yogurt.addedFruits;
+
+  let items = [];
+
+  if (addedFruits instanceof Set) {
+    items = Array.from(addedFruits);
+  } else if (Array.isArray(addedFruits)) {
+    items = addedFruits;
+  }
+
+  return new Set(
+    items
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+
+        if (item && typeof item.id === "string") {
+          return item.id;
+        }
+
+        if (item && typeof item.fruitId === "string") {
+          return item.fruitId;
+        }
+
+        return null;
+      })
+      .filter(Boolean)
+  );
+}
+
+/**
+ * Check the actual game state instead of relying on DOM elements.
+ * This avoids Safari state mismatches after touch/drop interactions.
+ */
+function canStartYogurtMixing() {
+  if (!gameState || !gameState.yogurt) {
+    return false;
+  }
+
+  const requiredFruitIds = fruits.map((fruit) => fruit.id);
+  const addedFruitIds = getAddedYogurtFruitIds();
+
+  const hasAllFruits = requiredFruitIds.every((fruitId) =>
+    addedFruitIds.has(fruitId)
+  );
+
+  return (
+    gameState.yogurt.yogurtAdded === true &&
+    hasAllFruits &&
+    gameState.yogurt.isMixing !== true &&
+    gameState.yogurt.completed !== true
+  );
+}
+
+/**
+ * Safari-safe Mix button state update.
+ */
 function updateMixButton() {
-  const fruitCount = gameState.yogurt.addedFruits.length;
-  const ready = gameState.yogurt.yogurtAdded && (gameState.mode === "free" ? fruitCount >= 1 : fruitCount === fruits.length);
-  elements.mixButton.disabled = !ready || gameState.yogurt.isMixing;
-  if (ready) elements.yogurtInstruction.textContent = "Press Mix!";
+  const mixButton = document.getElementById("mixButton");
+
+  if (!mixButton) {
+    return;
+  }
+
+  const isReady = canStartYogurtMixing();
+
+  if (isReady) {
+    /*
+     * Set both the property and HTML attribute.
+     * This forces Safari to refresh the native disabled state.
+     */
+    mixButton.disabled = false;
+    mixButton.removeAttribute("disabled");
+    mixButton.setAttribute("aria-disabled", "false");
+    mixButton.classList.add("is-ready");
+    mixButton.style.pointerEvents = "auto";
+  } else {
+    mixButton.disabled = true;
+    mixButton.setAttribute("disabled", "");
+    mixButton.setAttribute("aria-disabled", "true");
+    mixButton.classList.remove("is-ready");
+    mixButton.style.pointerEvents = "none";
+  }
 }
 
 function startMixingAnimation() {
@@ -1232,3 +1319,103 @@ function updateDebug() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeGame);
+
+/**
+ * Prevent page zoom gestures inside the fixed-screen game.
+ *
+ * Covers:
+ * - Pinch zoom
+ * - Safari gesture zoom
+ * - Double-tap zoom
+ * - Trackpad pinch represented as Ctrl + wheel
+ */
+function initializeIPadZoomLock() {
+  const gameRoot =
+    document.getElementById("gameContainer") ||
+    document.getElementById("gameArea") ||
+    document.querySelector(".game-container") ||
+    document.querySelector(".game-area") ||
+    document.body;
+
+  function preventGesture(event) {
+    event.preventDefault();
+  }
+
+  /*
+   * Safari-specific pinch gesture events.
+   */
+  document.addEventListener("gesturestart", preventGesture, {
+    passive: false
+  });
+
+  document.addEventListener("gesturechange", preventGesture, {
+    passive: false
+  });
+
+  document.addEventListener("gestureend", preventGesture, {
+    passive: false
+  });
+
+  /*
+   * Prevent two-finger pinch zoom.
+   * One-finger pointer dragging continues to work.
+   */
+  document.addEventListener(
+    "touchmove",
+    (event) => {
+      if (event.touches && event.touches.length > 1) {
+        event.preventDefault();
+      }
+    },
+    {
+      passive: false
+    }
+  );
+
+  /*
+   * Prevent Safari double-tap zoom inside the game.
+   */
+  let lastTouchEndTime = 0;
+
+  document.addEventListener(
+    "touchend",
+    (event) => {
+      if (!gameRoot.contains(event.target)) {
+        return;
+      }
+
+      const currentTime = Date.now();
+      const timeSincePreviousTouch =
+        currentTime - lastTouchEndTime;
+
+      if (
+        timeSincePreviousTouch > 0 &&
+        timeSincePreviousTouch < 300
+      ) {
+        event.preventDefault();
+      }
+
+      lastTouchEndTime = currentTime;
+    },
+    {
+      passive: false
+    }
+  );
+
+  /*
+   * Prevent pinch zoom from an attached trackpad.
+   */
+  document.addEventListener(
+    "wheel",
+    (event) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+    },
+    {
+      passive: false
+    }
+  );
+}
+
+initializeIPadZoomLock();
