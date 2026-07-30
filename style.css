@@ -984,11 +984,6 @@ button,
    MOBILE FULL-SCREEN + ORIENTATION FIX
    ========================================================= */
 
-:root {
-  --game-width: 100vw;
-  --game-height: 56.25vw;
-}
-
 *,
 *::before,
 *::after {
