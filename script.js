@@ -1588,3 +1588,223 @@ initializeIPadZoomLock();
     requestViewportUpdate();
   }
 })();
+
+/* =========================================================
+   SMARTPHONE VIEWPORT FIT FIX
+   Prevents the bottom Start button from being cropped.
+   ========================================================= */
+
+(function initializeSmartphoneViewportFit() {
+  "use strict";
+
+  const GAME_ASPECT_RATIO = 16 / 9;
+  const VIEWPORT_PADDING = 8;
+
+  let resizeFrameId = null;
+  let delayedResizeTimer = null;
+
+  function getVisibleViewportSize() {
+    const viewport = window.visualViewport;
+
+    if (viewport) {
+      return {
+        width: Math.max(1, viewport.width),
+        height: Math.max(1, viewport.height)
+      };
+    }
+
+    return {
+      width: Math.max(
+        1,
+        window.innerWidth ||
+        document.documentElement.clientWidth
+      ),
+      height: Math.max(
+        1,
+        window.innerHeight ||
+        document.documentElement.clientHeight
+      )
+    };
+  }
+
+  function calculateContainedGameSize(
+    viewportWidth,
+    viewportHeight
+  ) {
+    const safeWidth = Math.max(
+      1,
+      viewportWidth - VIEWPORT_PADDING
+    );
+
+    const safeHeight = Math.max(
+      1,
+      viewportHeight - VIEWPORT_PADDING
+    );
+
+    let gameWidth = safeWidth;
+    let gameHeight = gameWidth / GAME_ASPECT_RATIO;
+
+    /*
+     * If fitting by width makes the game too tall,
+     * fit it by height instead.
+     */
+    if (gameHeight > safeHeight) {
+      gameHeight = safeHeight;
+      gameWidth = gameHeight * GAME_ASPECT_RATIO;
+    }
+
+    return {
+      width: Math.floor(gameWidth),
+      height: Math.floor(gameHeight)
+    };
+  }
+
+  function updateSmartphoneViewport() {
+    resizeFrameId = null;
+
+    const viewport = getVisibleViewportSize();
+
+    const gameSize = calculateContainedGameSize(
+      viewport.width,
+      viewport.height
+    );
+
+    const rootStyle = document.documentElement.style;
+
+    rootStyle.setProperty(
+      "--mobile-viewport-width",
+      `${Math.floor(viewport.width)}px`
+    );
+
+    rootStyle.setProperty(
+      "--mobile-viewport-height",
+      `${Math.floor(viewport.height)}px`
+    );
+
+    rootStyle.setProperty(
+      "--responsive-game-width",
+      `${gameSize.width}px`
+    );
+
+    rootStyle.setProperty(
+      "--responsive-game-height",
+      `${gameSize.height}px`
+    );
+
+    /*
+     * Force Safari to refresh layout after the address bar
+     * changes height or after device rotation.
+     */
+    document.body.style.height =
+      `${Math.floor(viewport.height)}px`;
+
+    window.dispatchEvent(
+      new CustomEvent("gameviewportchange", {
+        detail: {
+          viewportWidth: viewport.width,
+          viewportHeight: viewport.height,
+          gameWidth: gameSize.width,
+          gameHeight: gameSize.height
+        }
+      })
+    );
+  }
+
+  function requestSmartphoneViewportUpdate() {
+    if (resizeFrameId !== null) {
+      cancelAnimationFrame(resizeFrameId);
+    }
+
+    resizeFrameId = requestAnimationFrame(
+      updateSmartphoneViewport
+    );
+  }
+
+  function refreshAfterOrientationChange() {
+    clearTimeout(delayedResizeTimer);
+
+    requestSmartphoneViewportUpdate();
+
+    /*
+     * Mobile Safari updates visualViewport several times
+     * after rotation and browser toolbar movement.
+     */
+    delayedResizeTimer = setTimeout(
+      requestSmartphoneViewportUpdate,
+      180
+    );
+
+    setTimeout(
+      requestSmartphoneViewportUpdate,
+      450
+    );
+
+    setTimeout(
+      requestSmartphoneViewportUpdate,
+      800
+    );
+  }
+
+  window.addEventListener(
+    "resize",
+    requestSmartphoneViewportUpdate,
+    {
+      passive: true
+    }
+  );
+
+  window.addEventListener(
+    "orientationchange",
+    refreshAfterOrientationChange,
+    {
+      passive: true
+    }
+  );
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener(
+      "resize",
+      requestSmartphoneViewportUpdate,
+      {
+        passive: true
+      }
+    );
+
+    window.visualViewport.addEventListener(
+      "scroll",
+      requestSmartphoneViewportUpdate,
+      {
+        passive: true
+      }
+    );
+  }
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (!document.hidden) {
+        refreshAfterOrientationChange();
+      }
+    }
+  );
+
+  window.addEventListener(
+    "pageshow",
+    refreshAfterOrientationChange,
+    {
+      passive: true
+    }
+  );
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      refreshAfterOrientationChange,
+      {
+        once: true
+      }
+    );
+  } else {
+    refreshAfterOrientationChange();
+  }
+})();
